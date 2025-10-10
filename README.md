@@ -369,7 +369,7 @@ This is part of the Elixir AI Research project. Contributions welcome!
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see [LICENSE](https://github.com/North-Shore-AI/crucible_trace/blob/main/LICENSE) file for details
 
 ## Documentation
 

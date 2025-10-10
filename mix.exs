@@ -41,11 +41,11 @@ defmodule CrucibleTrace.MixProject do
     [
       name: "crucible_trace",
       description: description(),
-      files: ~w(lib mix.exs README.md LICENSE),
+      files: ~w(lib mix.exs README.md CHANGELOG.md LICENSE),
       licenses: ["MIT"],
       links: %{
         "GitHub" => @source_url,
-        "Online documentation" => "https://hexdocs.pm/causal_trace"
+        "Online documentation" => "https://hexdocs.pm/crucible_trace"
       },
       maintainers: ["nshkrdotcom"]
     ]
