@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/crucible_trace.svg" alt="Trace" width="150"/>
+</p>
+
 # CrucibleTrace
 
 **Structured causal reasoning chain logging for LLM code generation**
