@@ -433,7 +433,7 @@ defmodule CrucibleTrace.Viewer do
     stats = Chain.statistics(chain)
 
     type_counts_html =
-      stats.event_type_counts
+      (stats[:event_type_counts] || %{})
       |> Enum.map(fn {type, count} ->
         "<div class=\"stat-item\">
           <div class=\"stat-label\">#{format_event_type(type)}</div>
@@ -441,6 +441,9 @@ defmodule CrucibleTrace.Viewer do
         </div>"
       end)
       |> Enum.join("\n")
+
+    avg_confidence = stats[:avg_confidence] || 0.0
+    duration = stats[:duration_seconds] || 0
 
     """
     <section class="statistics">
@@ -452,11 +455,11 @@ defmodule CrucibleTrace.Viewer do
         </div>
         <div class="stat-item">
           <div class="stat-label">Average Confidence</div>
-          <div class="stat-value">#{Float.round(stats.avg_confidence, 2)}</div>
+          <div class="stat-value">#{Float.round(avg_confidence, 2)}</div>
         </div>
         <div class="stat-item">
           <div class="stat-label">Duration</div>
-          <div class="stat-value">#{stats.duration_seconds}s</div>
+          <div class="stat-value">#{duration}s</div>
         </div>
         #{type_counts_html}
       </div>

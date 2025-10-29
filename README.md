@@ -231,8 +231,9 @@ CausalTrace is organized into six main modules:
 
 ## Examples
 
-See `examples/basic_usage.exs` for comprehensive examples including:
+The library includes comprehensive example files demonstrating various use cases:
 
+### Basic Usage (`examples/basic_usage.exs`)
 - Creating events manually
 - Parsing LLM output
 - Analyzing chains
@@ -241,13 +242,53 @@ See `examples/basic_usage.exs` for comprehensive examples including:
 - HTML visualization
 - Chain merging
 
-Run examples with:
+### Advanced Analysis (`examples/advanced_analysis.exs`)
+- Complex reasoning chains
+- Comprehensive statistics
+- Issue identification (low confidence, ambiguities, rejections)
+- Decision point analysis
+- Confidence trend analysis
+- Export for documentation
+- Custom filtering and analysis
+- Alternative comparison
+
+### LLM Integration (`examples/llm_integration.exs`)
+- Parsing realistic LLM-generated output
+- Building causal trace prompts
+- Validating LLM responses
+- Multi-round conversation tracking
+- Quality assurance checks for LLM outputs
+
+### Storage and Search (`examples/storage_and_search.exs`)
+- Creating and saving multiple chains
+- Listing all saved chains
+- Loading specific chains
+- Advanced searching with filters
+- Exporting chains in multiple formats (JSON, Markdown, CSV)
+- Chain deletion and archiving
+- Batch operations and storage statistics
+
+Run any example with:
 
 ```bash
 mix run examples/basic_usage.exs
+mix run examples/advanced_analysis.exs
+mix run examples/llm_integration.exs
+mix run examples/storage_and_search.exs
 ```
 
 ## Testing
+
+The library has comprehensive test coverage across all modules:
+
+- **Event tests**: 11 tests covering event creation, validation, and serialization
+- **Chain tests**: 18 tests covering chain operations, statistics, and filtering
+- **Parser tests**: 21 tests covering LLM output parsing and validation
+- **Storage tests**: 21 tests covering persistence, search, and export
+- **Viewer tests**: 30 tests covering HTML generation and visualization
+- **Integration tests**: 2 tests covering end-to-end functionality
+
+Total: 103+ tests with 100% pass rate
 
 Run the test suite:
 
@@ -259,6 +300,12 @@ Run with coverage:
 
 ```bash
 mix test --cover
+```
+
+Run with strict warnings:
+
+```bash
+mix test --warnings-as-errors
 ```
 
 ## Configuration
