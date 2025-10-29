@@ -4,6 +4,11 @@
 
 # CrucibleTrace
 
+[![Elixir](https://img.shields.io/badge/elixir-1.14+-purple.svg)](https://elixir-lang.org)
+[![Hex.pm](https://img.shields.io/hexpm/v/crucible_trace.svg)](https://hex.pm/packages/crucible_trace)
+[![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_trace)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_trace/blob/main/LICENSE)
+
 **Structured causal reasoning chain logging for LLM code generation**
 
 CausalTrace enables transparency and debugging in LLM-based code generation by capturing the decision-making process. It logs causal reasoning chains with events, alternatives considered, confidence levels, and supporting rationale.
