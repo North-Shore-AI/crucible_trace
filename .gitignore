@@ -94,3 +94,5 @@ mix.exs.old
 # Example output traces (generated at runtime)
 example_traces/
 causal_traces/
+
+repomix*.xml
