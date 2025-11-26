@@ -21,7 +21,9 @@ CausalTrace enables transparency and debugging in LLM-based code generation by c
 - **Persistent Storage**: Save chains to disk in JSON format with search capabilities
 - **Interactive Visualization**: Generate beautiful HTML views with filtering and statistics
 - **Analysis Tools**: Query events, calculate statistics, find decision points
-- **Multiple Export Formats**: JSON, Markdown, and CSV exports
+- **Multiple Export Formats**: JSON, Markdown, CSV, and Mermaid diagrams
+- **Chain Comparison**: Diff two chains to identify changes, track confidence evolution (v0.2.0)
+- **Mermaid Diagrams**: Export to flowchart, sequence, timeline, or graph formats for documentation (v0.2.0)
 
 ## Installation
 
@@ -30,7 +32,7 @@ Add `causal_trace` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:crucible_trace, "~> 0.1.0"}
+    {:crucible_trace, "~> 0.2.0"}
   ]
 end
 ```
@@ -176,6 +178,70 @@ stats = CrucibleTrace.statistics(chain)
 # }
 ```
 
+### Chain Comparison (v0.2.0)
+
+Compare two reasoning chains to analyze differences:
+
+```elixir
+# Compare chains from different LLM runs
+{:ok, diff} = CrucibleTrace.diff_chains(chain1, chain2)
+
+# View summary
+IO.puts(diff.summary)
+# => "2 added, 1 removed, 3 modified"
+
+# Check similarity
+IO.puts("Similarity: #{diff.similarity_score * 100}%")
+
+# Export diff reports
+text_diff = CrucibleTrace.diff_to_text(diff)
+html_diff = CrucibleTrace.diff_to_html(diff, chain1, chain2)
+
+# Track confidence changes
+diff.confidence_deltas
+# => %{"event_id" => 0.15, ...}
+```
+
+Use cases:
+- **A/B Testing**: Compare reasoning from different models or prompts
+- **Regression Detection**: Ensure prompt changes don't degrade reasoning quality
+- **Confidence Evolution**: Track how confidence changes between iterations
+
+### Mermaid Diagram Export (v0.2.0)
+
+Export chains as Mermaid diagrams for documentation:
+
+```elixir
+# Export as flowchart
+mermaid = CrucibleTrace.export_mermaid(chain, :flowchart,
+  color_by_type: true,
+  include_confidence: true
+)
+
+# Embed in markdown
+File.write!("decisions.md", """
+# Decision Log
+
+```mermaid
+#{mermaid}
+```
+""")
+
+# Other formats
+CrucibleTrace.export_mermaid(chain, :sequence)  # Sequence diagram
+CrucibleTrace.export_mermaid(chain, :timeline)  # Timeline view
+CrucibleTrace.export_mermaid(chain, :graph)     # Graph with relationships
+
+# Via unified export API
+{:ok, mermaid} = CrucibleTrace.export(chain, :mermaid_flowchart)
+```
+
+Generated Mermaid diagrams are compatible with:
+- GitHub (renders in README.md, issues, PRs)
+- GitLab (renders in merge requests, wikis)
+- Obsidian, Notion, VS Code
+- Any tool supporting Mermaid.js
+
 ## Event Types
 
 CausalTrace supports six event types:
@@ -273,6 +339,18 @@ The library includes comprehensive example files demonstrating various use cases
 - Chain deletion and archiving
 - Batch operations and storage statistics
 
+### Chain Comparison (`examples/chain_comparison.exs`)
+- Compare reasoning chains from different runs
+- Track added/removed/modified events
+- Analyze confidence deltas
+- Generate HTML diff reports for side-by-side review
+
+### Mermaid Export (`examples/mermaid_export.exs`)
+- Export flowchart, sequence, timeline, and graph diagrams
+- Embed diagrams in Markdown/README files
+- Demonstrate GitHub/GitLab/Obsidian compatibility
+- Show unified export API via `CrucibleTrace.export/3`
+
 Run any example with:
 
 ```bash
@@ -280,7 +358,17 @@ mix run examples/basic_usage.exs
 mix run examples/advanced_analysis.exs
 mix run examples/llm_integration.exs
 mix run examples/storage_and_search.exs
+mix run examples/chain_comparison.exs
+mix run examples/mermaid_export.exs
 ```
+
+Run them all at once:
+
+```bash
+./examples/run_examples.sh
+```
+
+Example outputs (JSON/Markdown/HTML) are written to `example_traces/` by default (gitignored). Override with `EXAMPLES_OUTPUT_DIR=/your/path ./examples/run_examples.sh`.
 
 ## Testing
 

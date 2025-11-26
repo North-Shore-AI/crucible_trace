@@ -5,6 +5,11 @@
 
 IO.puts("\n=== CausalTrace Basic Usage Examples ===\n")
 
+output_dir = System.get_env("EXAMPLES_OUTPUT_DIR", "example_traces")
+File.mkdir_p!(output_dir)
+storage_opts = [storage_dir: output_dir]
+out = fn name -> Path.join(output_dir, name) end
+
 # Example 1: Creating events manually
 IO.puts("Example 1: Creating events manually")
 IO.puts("-------------------------------------")
@@ -171,12 +176,12 @@ IO.puts("\n\nExample 5: Storage operations")
 IO.puts("-------------------------------------")
 
 # Save chain
-case CrucibleTrace.save(chain, storage_dir: "example_traces") do
+case CrucibleTrace.save(chain, storage_opts) do
   {:ok, path} ->
     IO.puts("Saved chain to: #{path}")
 
     # Load it back
-    case CrucibleTrace.load(chain.id, storage_dir: "example_traces") do
+    case CrucibleTrace.load(chain.id, storage_opts) do
       {:ok, loaded_chain} ->
         IO.puts("Loaded chain: #{loaded_chain.name}")
         IO.puts("Events preserved: #{length(loaded_chain.events)}")
@@ -208,7 +213,7 @@ IO.puts("Generated HTML visualization")
 IO.puts("HTML length: #{String.length(html)} characters")
 
 # Save to file
-html_file = "example_traces/visualization.html"
+html_file = out.("visualization.html")
 
 case CrucibleTrace.save_visualization(chain, html_file) do
   {:ok, path} ->

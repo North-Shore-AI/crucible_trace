@@ -124,8 +124,14 @@ defmodule CrucibleTrace.Storage do
   - `:json` - JSON format
   - `:markdown` - Human-readable markdown
   - `:csv` - CSV format for events
+  - `:mermaid_flowchart` - Mermaid flowchart diagram
+  - `:mermaid_sequence` - Mermaid sequence diagram
+  - `:mermaid_timeline` - Mermaid timeline
+  - `:mermaid_graph` - Mermaid graph
   """
-  def export(%Chain{} = chain, format, _opts \\ []) do
+  def export(%Chain{} = chain, format, opts \\ []) do
+    alias CrucibleTrace.Mermaid
+
     case format do
       :json ->
         encode_chain(chain, :json)
@@ -135,6 +141,18 @@ defmodule CrucibleTrace.Storage do
 
       :csv ->
         {:ok, format_as_csv(chain)}
+
+      :mermaid_flowchart ->
+        {:ok, Mermaid.to_flowchart(chain, opts)}
+
+      :mermaid_sequence ->
+        {:ok, Mermaid.to_sequence(chain, opts)}
+
+      :mermaid_timeline ->
+        {:ok, Mermaid.to_timeline(chain, opts)}
+
+      :mermaid_graph ->
+        {:ok, Mermaid.to_graph(chain, opts)}
 
       _ ->
         {:error, "Unsupported export format: #{format}"}

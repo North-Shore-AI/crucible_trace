@@ -5,6 +5,11 @@
 
 IO.puts("\n=== CrucibleTrace Advanced Analysis Examples ===\n")
 
+output_dir = System.get_env("EXAMPLES_OUTPUT_DIR", "example_traces")
+File.mkdir_p!(output_dir)
+storage_opts = [storage_dir: output_dir]
+out = fn name -> Path.join(output_dir, name) end
+
 # Example 1: Complex chain with multiple decision types
 IO.puts("Example 1: Building a complex reasoning chain")
 IO.puts("-----------------------------------------------")
@@ -212,7 +217,7 @@ IO.puts("\n\nExample 6: Exporting for documentation")
 IO.puts("-----------------------------------------------")
 
 # Save chain
-case CrucibleTrace.save(chain, storage_dir: "example_traces") do
+case CrucibleTrace.save(chain, storage_opts) do
   {:ok, path} ->
     IO.puts("✓ Saved chain to: #{path}")
 
@@ -223,7 +228,7 @@ end
 # Export to markdown for documentation
 case CrucibleTrace.export(chain, :markdown) do
   {:ok, markdown} ->
-    markdown_file = "example_traces/checkout_analysis.md"
+    markdown_file = out.("checkout_analysis.md")
     File.write!(markdown_file, markdown)
     IO.puts("✓ Exported markdown to: #{markdown_file}")
 
@@ -234,7 +239,7 @@ end
 # Export to CSV for spreadsheet analysis
 case CrucibleTrace.export(chain, :csv) do
   {:ok, csv} ->
-    csv_file = "example_traces/checkout_analysis.csv"
+    csv_file = out.("checkout_analysis.csv")
     File.write!(csv_file, csv)
     IO.puts("✓ Exported CSV to: #{csv_file}")
 
@@ -295,7 +300,7 @@ end
 IO.puts("\n\nExample 8: Creating visualization")
 IO.puts("-----------------------------------------------")
 
-html_file = "example_traces/checkout_visualization.html"
+html_file = out.("checkout_visualization.html")
 
 case CrucibleTrace.save_visualization(chain, html_file, style: :light) do
   {:ok, path} ->

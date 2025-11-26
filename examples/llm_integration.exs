@@ -5,6 +5,11 @@
 
 IO.puts("\n=== CrucibleTrace LLM Integration Examples ===\n")
 
+output_dir = System.get_env("EXAMPLES_OUTPUT_DIR", "example_traces")
+File.mkdir_p!(output_dir)
+storage_opts = [storage_dir: output_dir]
+out = fn name -> Path.join(output_dir, name) end
+
 # Example 1: Parsing realistic LLM output
 IO.puts("Example 1: Parsing LLM-generated reasoning")
 IO.puts("-----------------------------------------------")
@@ -128,7 +133,7 @@ case CrucibleTrace.parse_llm_output(llm_response, "Distributed Cache Design") do
     IO.puts("    Event types: #{map_size(stats.event_type_counts)}")
 
     # Save the chain
-    case CrucibleTrace.save(chain, storage_dir: "example_traces") do
+    case CrucibleTrace.save(chain, storage_opts) do
       {:ok, path} ->
         IO.puts("\n✓ Saved chain to: #{path}")
 
@@ -190,7 +195,7 @@ IO.puts("  - Event type descriptions")
 IO.puts("  - Best practices guidance")
 
 # Save the prompt for use with LLM
-prompt_file = "example_traces/notification_system_prompt.txt"
+prompt_file = out.("notification_system_prompt.txt")
 File.write!(prompt_file, enhanced_prompt)
 IO.puts("\n✓ Saved prompt to: #{prompt_file}")
 IO.puts("  Ready to use with your LLM API")
@@ -293,7 +298,7 @@ Enum.with_index(sorted.events, 1)
 end)
 
 # Save merged conversation
-case CrucibleTrace.save(merged_chain, storage_dir: "example_traces") do
+case CrucibleTrace.save(merged_chain, storage_opts) do
   {:ok, path} ->
     IO.puts("\n✓ Saved complete conversation chain to: #{path}")
 

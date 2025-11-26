@@ -39,7 +39,7 @@ defmodule CrucibleTrace do
   - **Analysis**: Query and filter events, calculate statistics
   """
 
-  alias CrucibleTrace.{Chain, Event, Parser, Storage, Viewer}
+  alias CrucibleTrace.{Chain, Event, Parser, Storage, Viewer, Diff, Mermaid}
 
   # Chain Operations
 
@@ -343,4 +343,48 @@ defmodule CrucibleTrace do
   Creates an event from a map (e.g., from JSON parsing).
   """
   defdelegate event_from_map(map), to: Event, as: :from_map
+
+  # Diff Operations
+
+  @doc """
+  Compares two chains and returns a diff structure.
+
+  ## Examples
+
+      {:ok, diff} = CrucibleTrace.diff_chains(chain1, chain2)
+      IO.puts(diff.summary)
+  """
+  defdelegate diff_chains(chain1, chain2, opts \\ []), to: Diff, as: :compare
+
+  @doc """
+  Converts a diff to human-readable text format.
+  """
+  defdelegate diff_to_text(diff), to: Diff, as: :to_text
+
+  @doc """
+  Generates an HTML visualization of the diff.
+  """
+  defdelegate diff_to_html(diff, chain1, chain2), to: Diff, as: :to_html
+
+  # Mermaid Export Operations
+
+  @doc """
+  Exports a chain as a Mermaid flowchart diagram.
+
+  ## Examples
+
+      mermaid = CrucibleTrace.export_mermaid(chain, :flowchart)
+      File.write!("diagram.md", "```mermaid\\n\#{mermaid}\\n```")
+  """
+  def export_mermaid(chain, format, opts \\ [])
+
+  def export_mermaid(chain, :flowchart, opts), do: Mermaid.to_flowchart(chain, opts)
+  def export_mermaid(chain, :sequence, opts), do: Mermaid.to_sequence(chain, opts)
+  def export_mermaid(chain, :timeline, opts), do: Mermaid.to_timeline(chain, opts)
+  def export_mermaid(chain, :graph, opts), do: Mermaid.to_graph(chain, opts)
+
+  def export_mermaid(_chain, format, _opts) do
+    {:error,
+     "Unsupported Mermaid format: #{inspect(format)}. Use :flowchart, :sequence, :timeline, or :graph"}
+  end
 end

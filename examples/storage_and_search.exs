@@ -5,6 +5,10 @@
 
 IO.puts("\n=== CrucibleTrace Storage and Search Examples ===\n")
 
+output_dir = System.get_env("EXAMPLES_OUTPUT_DIR", "example_traces")
+File.mkdir_p!(output_dir)
+storage_dir = output_dir
+
 # Helper function to create sample chains
 defmodule ChainFactory do
   def create_sample_chain(name, event_count, avg_confidence) do
@@ -55,7 +59,7 @@ created_chains =
   Enum.map(chains_to_create, fn {name, count, conf} ->
     chain = ChainFactory.create_sample_chain(name, count, conf)
 
-    case CrucibleTrace.save(chain, storage_dir: "example_traces") do
+    case CrucibleTrace.save(chain, storage_dir: storage_dir) do
       {:ok, path} ->
         IO.puts("✓ #{name}: #{count} events, avg confidence #{conf}")
         IO.puts("  Saved to: #{Path.basename(path)}")
@@ -74,7 +78,7 @@ IO.puts("\n✓ Created and saved #{length(created_chains)} chains")
 IO.puts("\n\nExample 2: Listing all saved chains")
 IO.puts("-----------------------------------------------")
 
-case CrucibleTrace.list_chains(storage_dir: "example_traces") do
+case CrucibleTrace.list_chains(storage_dir: storage_dir) do
   {:ok, chains} ->
     IO.puts("Found #{length(chains)} chain(s) in storage:\n")
 
@@ -105,7 +109,7 @@ if length(created_chains) > 0 do
   chain_to_load = Enum.random(created_chains)
   IO.puts("Loading chain: #{chain_to_load.name}")
 
-  case CrucibleTrace.load(chain_to_load.id, storage_dir: "example_traces") do
+  case CrucibleTrace.load(chain_to_load.id, storage_dir: storage_dir) do
     {:ok, loaded_chain} ->
       IO.puts("✓ Successfully loaded chain")
       IO.puts("  Name: #{loaded_chain.name}")
@@ -134,7 +138,7 @@ IO.puts("-----------------------------------------------")
 
 IO.puts("\n1. Search by name (containing 'System'):")
 
-case CrucibleTrace.search([name_contains: "System"], storage_dir: "example_traces") do
+case CrucibleTrace.search([name_contains: "System"], storage_dir: storage_dir) do
   {:ok, results} ->
     IO.puts("   Found #{length(results)} match(es):")
 
@@ -148,7 +152,7 @@ end
 
 IO.puts("\n2. Search by event count (minimum 5 events):")
 
-case CrucibleTrace.search([min_events: 5], storage_dir: "example_traces") do
+case CrucibleTrace.search([min_events: 5], storage_dir: storage_dir) do
   {:ok, results} ->
     IO.puts("   Found #{length(results)} match(es):")
 
@@ -163,7 +167,7 @@ end
 IO.puts("\n3. Search by creation date (created in last hour):")
 one_hour_ago = DateTime.add(DateTime.utc_now(), -3600, :second)
 
-case CrucibleTrace.search([created_after: one_hour_ago], storage_dir: "example_traces") do
+case CrucibleTrace.search([created_after: one_hour_ago], storage_dir: storage_dir) do
   {:ok, results} ->
     IO.puts("   Found #{length(results)} match(es) created in the last hour:")
 
@@ -180,7 +184,7 @@ IO.puts("\n4. Combined search (name + minimum events):")
 
 case CrucibleTrace.search(
        [name_contains: "a", min_events: 4],
-       storage_dir: "example_traces"
+       storage_dir: storage_dir
      ) do
   {:ok, results} ->
     IO.puts("   Found #{length(results)} match(es):")
@@ -204,7 +208,7 @@ if length(created_chains) > 0 do
   # Export to JSON
   case CrucibleTrace.export(export_chain, :json) do
     {:ok, json} ->
-      json_file = "example_traces/export_sample.json"
+      json_file = Path.join(output_dir, "export_sample.json")
       File.write!(json_file, json)
       IO.puts("✓ JSON export: #{json_file}")
       IO.puts("  Size: #{String.length(json)} bytes")
@@ -216,7 +220,7 @@ if length(created_chains) > 0 do
   # Export to Markdown
   case CrucibleTrace.export(export_chain, :markdown) do
     {:ok, markdown} ->
-      md_file = "example_traces/export_sample.md"
+      md_file = Path.join(output_dir, "export_sample.md")
       File.write!(md_file, markdown)
       IO.puts("✓ Markdown export: #{md_file}")
       IO.puts("  Size: #{String.length(markdown)} bytes")
@@ -232,7 +236,7 @@ if length(created_chains) > 0 do
   # Export to CSV
   case CrucibleTrace.export(export_chain, :csv) do
     {:ok, csv} ->
-      csv_file = "example_traces/export_sample.csv"
+      csv_file = Path.join(output_dir, "export_sample.csv")
       File.write!(csv_file, csv)
       IO.puts("✓ CSV export: #{csv_file}")
       IO.puts("  Size: #{String.length(csv)} bytes")
@@ -250,22 +254,22 @@ IO.puts("-----------------------------------------------")
 # Create a temporary chain for deletion demo
 temp_chain = ChainFactory.create_sample_chain("Temporary Test Chain", 2, 0.8)
 
-case CrucibleTrace.save(temp_chain, storage_dir: "example_traces") do
+case CrucibleTrace.save(temp_chain, storage_dir: storage_dir) do
   {:ok, _path} ->
     IO.puts("✓ Created temporary chain for deletion demo")
 
     # Verify it exists
-    case CrucibleTrace.load(temp_chain.id, storage_dir: "example_traces") do
+    case CrucibleTrace.load(temp_chain.id, storage_dir: storage_dir) do
       {:ok, _} ->
         IO.puts("✓ Verified chain exists")
 
         # Delete it
-        case CrucibleTrace.delete(temp_chain.id, storage_dir: "example_traces") do
+        case CrucibleTrace.delete(temp_chain.id, storage_dir: storage_dir) do
           :ok ->
             IO.puts("✓ Chain deleted successfully")
 
             # Verify deletion
-            case CrucibleTrace.load(temp_chain.id, storage_dir: "example_traces") do
+            case CrucibleTrace.load(temp_chain.id, storage_dir: storage_dir) do
               {:error, _} ->
                 IO.puts("✓ Verified chain no longer exists")
 
@@ -295,7 +299,7 @@ old_chains =
     chain = ChainFactory.create_sample_chain("Old Chain #{i}", 3, 0.85)
     # Note: In a real scenario, these would actually be old
     # For demo purposes, we're creating them now
-    case CrucibleTrace.save(chain, storage_dir: "example_traces") do
+    case CrucibleTrace.save(chain, storage_dir: storage_dir) do
       {:ok, _} -> chain
       {:error, _} -> nil
     end
@@ -305,7 +309,7 @@ old_chains =
 IO.puts("Created #{length(old_chains)} chains for archiving demo")
 
 # Archive chains older than 0 days (for demo - in reality you'd use a larger number)
-case CrucibleTrace.Storage.archive(0, storage_dir: "example_traces") do
+case CrucibleTrace.Storage.archive(0, storage_dir: storage_dir) do
   {:ok, archived_ids} ->
     IO.puts("✓ Archived #{length(archived_ids)} chain(s)")
 
@@ -321,7 +325,7 @@ end
 IO.puts("\n\nExample 8: Batch operations on chains")
 IO.puts("-----------------------------------------------")
 
-case CrucibleTrace.list_chains(storage_dir: "example_traces") do
+case CrucibleTrace.list_chains(storage_dir: storage_dir) do
   {:ok, chains} ->
     IO.puts("Analyzing #{length(chains)} chains:\n")
 
