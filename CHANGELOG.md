@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2025-11-26
+
+### Added
+- Added `crucible_ir` dependency for shared IR types across Crucible framework components
+
 ## [0.2.0] - 2025-11-25
 
 ### Added
