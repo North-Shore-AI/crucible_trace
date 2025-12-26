@@ -39,7 +39,19 @@ defmodule CrucibleTrace do
   - **Analysis**: Query and filter events, calculate statistics
   """
 
-  alias CrucibleTrace.{Chain, Event, Parser, Storage, Viewer, Diff, Mermaid}
+  alias CrucibleTrace.{
+    Chain,
+    Diff,
+    Event,
+    Mermaid,
+    Parser,
+    Query,
+    Stage,
+    Storage,
+    Telemetry,
+    Training,
+    Viewer
+  }
 
   # Chain Operations
 
@@ -387,4 +399,145 @@ defmodule CrucibleTrace do
     {:error,
      "Unsupported Mermaid format: #{inspect(format)}. Use :flowchart, :sequence, :timeline, or :graph"}
   end
+
+  # Training Operations
+
+  @doc """
+  Creates a training_started event.
+
+  See `CrucibleTrace.Training.training_started/3` for options.
+  """
+  defdelegate training_started(decision, reasoning, opts \\ []), to: Training
+
+  @doc """
+  Creates a training_completed event.
+
+  See `CrucibleTrace.Training.training_completed/3` for options.
+  """
+  defdelegate training_completed(decision, reasoning, opts \\ []), to: Training
+
+  @doc """
+  Creates an epoch_completed event.
+
+  See `CrucibleTrace.Training.epoch_completed/3` for options.
+  """
+  defdelegate epoch_completed(epoch, metrics, opts \\ []), to: Training
+
+  @doc """
+  Creates a loss_computed event.
+
+  See `CrucibleTrace.Training.loss_computed/2` for options.
+  """
+  defdelegate loss_computed(loss_value, opts \\ []), to: Training
+
+  @doc """
+  Creates a checkpoint_saved event.
+
+  See `CrucibleTrace.Training.checkpoint_saved/2` for options.
+  """
+  defdelegate checkpoint_saved(path, opts \\ []), to: Training
+
+  @doc """
+  Creates events from training metrics history.
+
+  See `CrucibleTrace.Training.from_training_metrics/2` for options.
+  """
+  defdelegate from_training_metrics(metrics_list, opts \\ []), to: Training
+
+  @doc """
+  Wraps a training function with automatic trace events.
+
+  See `CrucibleTrace.Training.trace_training/3` for options.
+  """
+  defdelegate trace_training(chain, training_fn, opts \\ []), to: Training
+
+  # Telemetry Operations
+
+  @doc """
+  Attaches telemetry handlers for automatic trace collection.
+
+  See `CrucibleTrace.Telemetry.attach_handlers/1` for options.
+  """
+  defdelegate attach_telemetry(opts \\ []), to: Telemetry, as: :attach_handlers
+
+  @doc """
+  Detaches telemetry handlers.
+  """
+  defdelegate detach_telemetry(), to: Telemetry, as: :detach_handlers
+
+  # Query Operations
+
+  @doc """
+  Searches events by content.
+
+  See `CrucibleTrace.Query.search_events/3` for options.
+  """
+  defdelegate search_events(chain, content, opts \\ []), to: Query
+
+  @doc """
+  Searches events with regex pattern.
+
+  See `CrucibleTrace.Query.search_regex/3` for options.
+  """
+  defdelegate search_regex(chain, pattern, opts \\ []), to: Query
+
+  @doc """
+  Advanced query with boolean logic.
+
+  See `CrucibleTrace.Query.query/2` for query format.
+  """
+  defdelegate query_events(chain, query_map), to: Query, as: :query
+
+  @doc """
+  Aggregates events by a field.
+
+  See `CrucibleTrace.Query.aggregate_by/3` for options.
+  """
+  defdelegate aggregate_by(chain, field, aggregation_fn), to: Query
+
+  # Relationship Operations
+
+  @doc """
+  Gets child events of a given event.
+  """
+  defdelegate get_children(chain, event_id), to: Chain
+
+  @doc """
+  Gets parent event of a given event.
+  """
+  defdelegate get_parent(chain, event_id), to: Chain
+
+  @doc """
+  Gets root events (no parent).
+  """
+  defdelegate get_root_events(chain), to: Chain
+
+  @doc """
+  Gets leaf events (no children).
+  """
+  defdelegate get_leaf_events(chain), to: Chain
+
+  @doc """
+  Validates relationship integrity.
+  """
+  defdelegate validate_relationships(chain), to: Chain
+
+  @doc """
+  Gets all events for a given stage_id.
+  """
+  defdelegate get_events_by_stage(chain, stage_id), to: Chain
+
+  @doc """
+  Gets all events for a given experiment_id.
+  """
+  defdelegate get_events_by_experiment(chain, experiment_id), to: Chain
+
+  # Stage Operations
+
+  @doc """
+  Wraps a stage function with tracing.
+
+  See `CrucibleTrace.Stage.trace_stage/4` for options.
+  """
+  defdelegate trace_stage(chain, stage_id, stage_fn, opts \\ []), to: Stage
 end

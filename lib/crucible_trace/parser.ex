@@ -132,16 +132,46 @@ defmodule CrucibleTrace.Parser do
     )
   end
 
+  @event_type_map %{
+    # Original reasoning event types
+    "hypothesis_formed" => :hypothesis_formed,
+    "alternative_rejected" => :alternative_rejected,
+    "constraint_evaluated" => :constraint_evaluated,
+    "pattern_applied" => :pattern_applied,
+    "ambiguity_flagged" => :ambiguity_flagged,
+    "confidence_updated" => :confidence_updated,
+    # Training lifecycle events
+    "training_started" => :training_started,
+    "training_completed" => :training_completed,
+    "epoch_started" => :epoch_started,
+    "epoch_completed" => :epoch_completed,
+    "batch_processed" => :batch_processed,
+    # Metrics events
+    "loss_computed" => :loss_computed,
+    "metric_recorded" => :metric_recorded,
+    "gradient_computed" => :gradient_computed,
+    # Checkpoint events
+    "checkpoint_saved" => :checkpoint_saved,
+    "checkpoint_loaded" => :checkpoint_loaded,
+    "early_stopped" => :early_stopped,
+    # Deployment events
+    "deployment_started" => :deployment_started,
+    "model_loaded" => :model_loaded,
+    "inference_completed" => :inference_completed,
+    "deployment_completed" => :deployment_completed,
+    # RL/Feedback events
+    "reward_received" => :reward_received,
+    "policy_updated" => :policy_updated,
+    "experience_sampled" => :experience_sampled,
+    # Stage events
+    "stage_started" => :stage_started,
+    "stage_completed" => :stage_completed
+  }
+
   defp parse_event_type(type_str) do
-    case String.trim(type_str) do
-      "hypothesis_formed" -> :hypothesis_formed
-      "alternative_rejected" -> :alternative_rejected
-      "constraint_evaluated" -> :constraint_evaluated
-      "pattern_applied" -> :pattern_applied
-      "ambiguity_flagged" -> :ambiguity_flagged
-      "confidence_updated" -> :confidence_updated
-      _ -> :hypothesis_formed
-    end
+    type_str
+    |> String.trim()
+    |> then(&Map.get(@event_type_map, &1, :hypothesis_formed))
   end
 
   defp extract_tag_content(content, tag) do

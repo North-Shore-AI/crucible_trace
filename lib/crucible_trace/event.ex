@@ -6,6 +6,7 @@ defmodule CrucibleTrace.Event do
   including what was chosen, what alternatives were considered, and why.
   """
 
+  # Original reasoning event types
   @type event_type ::
           :hypothesis_formed
           | :alternative_rejected
@@ -13,6 +14,32 @@ defmodule CrucibleTrace.Event do
           | :pattern_applied
           | :ambiguity_flagged
           | :confidence_updated
+          # Training lifecycle events
+          | :training_started
+          | :training_completed
+          | :epoch_started
+          | :epoch_completed
+          | :batch_processed
+          # Metrics events
+          | :loss_computed
+          | :metric_recorded
+          | :gradient_computed
+          # Checkpoint events
+          | :checkpoint_saved
+          | :checkpoint_loaded
+          | :early_stopped
+          # Deployment events
+          | :deployment_started
+          | :model_loaded
+          | :inference_completed
+          | :deployment_completed
+          # RL/Feedback events
+          | :reward_received
+          | :policy_updated
+          | :experience_sampled
+          # Stage events
+          | :stage_started
+          | :stage_completed
 
   @type t :: %__MODULE__{
           id: String.t(),
@@ -24,7 +51,12 @@ defmodule CrucibleTrace.Event do
           confidence: float(),
           code_section: String.t() | nil,
           spec_reference: String.t() | nil,
-          metadata: map()
+          metadata: map(),
+          # Relationship fields
+          parent_id: String.t() | nil,
+          depends_on: [String.t()],
+          stage_id: String.t() | nil,
+          experiment_id: String.t() | nil
         }
 
   @enforce_keys [:id, :timestamp, :type, :decision, :reasoning]
@@ -38,7 +70,12 @@ defmodule CrucibleTrace.Event do
     confidence: 1.0,
     code_section: nil,
     spec_reference: nil,
-    metadata: %{}
+    metadata: %{},
+    # Relationship fields
+    parent_id: nil,
+    depends_on: [],
+    stage_id: nil,
+    experiment_id: nil
   ]
 
   @doc """
@@ -64,7 +101,12 @@ defmodule CrucibleTrace.Event do
       confidence: Keyword.get(opts, :confidence, 1.0),
       code_section: Keyword.get(opts, :code_section),
       spec_reference: Keyword.get(opts, :spec_reference),
-      metadata: Keyword.get(opts, :metadata, %{})
+      metadata: Keyword.get(opts, :metadata, %{}),
+      # Relationship fields
+      parent_id: Keyword.get(opts, :parent_id),
+      depends_on: Keyword.get(opts, :depends_on, []),
+      stage_id: Keyword.get(opts, :stage_id),
+      experiment_id: Keyword.get(opts, :experiment_id)
     }
   end
 
@@ -81,15 +123,43 @@ defmodule CrucibleTrace.Event do
     end
   end
 
-  defp validate_type(type)
-       when type in [
-              :hypothesis_formed,
-              :alternative_rejected,
-              :constraint_evaluated,
-              :pattern_applied,
-              :ambiguity_flagged,
-              :confidence_updated
-            ] do
+  @valid_event_types [
+    # Original reasoning event types
+    :hypothesis_formed,
+    :alternative_rejected,
+    :constraint_evaluated,
+    :pattern_applied,
+    :ambiguity_flagged,
+    :confidence_updated,
+    # Training lifecycle events
+    :training_started,
+    :training_completed,
+    :epoch_started,
+    :epoch_completed,
+    :batch_processed,
+    # Metrics events
+    :loss_computed,
+    :metric_recorded,
+    :gradient_computed,
+    # Checkpoint events
+    :checkpoint_saved,
+    :checkpoint_loaded,
+    :early_stopped,
+    # Deployment events
+    :deployment_started,
+    :model_loaded,
+    :inference_completed,
+    :deployment_completed,
+    # RL/Feedback events
+    :reward_received,
+    :policy_updated,
+    :experience_sampled,
+    # Stage events
+    :stage_started,
+    :stage_completed
+  ]
+
+  defp validate_type(type) when type in @valid_event_types do
     :ok
   end
 
@@ -126,7 +196,12 @@ defmodule CrucibleTrace.Event do
       confidence: event.confidence,
       code_section: event.code_section,
       spec_reference: event.spec_reference,
-      metadata: event.metadata
+      metadata: event.metadata,
+      # Relationship fields
+      parent_id: event.parent_id,
+      depends_on: event.depends_on,
+      stage_id: event.stage_id,
+      experiment_id: event.experiment_id
     }
   end
 
@@ -144,7 +219,12 @@ defmodule CrucibleTrace.Event do
       confidence: parse_confidence(Map.get(map, "confidence") || Map.get(map, :confidence, 1.0)),
       code_section: Map.get(map, "code_section") || Map.get(map, :code_section),
       spec_reference: Map.get(map, "spec_reference") || Map.get(map, :spec_reference),
-      metadata: Map.get(map, "metadata") || Map.get(map, :metadata, %{})
+      metadata: Map.get(map, "metadata") || Map.get(map, :metadata, %{}),
+      # Relationship fields
+      parent_id: Map.get(map, "parent_id") || Map.get(map, :parent_id),
+      depends_on: Map.get(map, "depends_on") || Map.get(map, :depends_on, []),
+      stage_id: Map.get(map, "stage_id") || Map.get(map, :stage_id),
+      experiment_id: Map.get(map, "experiment_id") || Map.get(map, :experiment_id)
     }
   end
 

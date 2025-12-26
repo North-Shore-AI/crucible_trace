@@ -1,42 +1,159 @@
-<svg width="200" height="240" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="grad_crucible_trace" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#BA55D3;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#BA55D3;stop-opacity:0.7" />
+    <!-- Gradient definitions -->
+    <linearGradient id="hexGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#CC7A2C;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#D68A3A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B8620F;stop-opacity:1" />
     </linearGradient>
+
+    <linearGradient id="causalFlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9A3D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </linearGradient>
+
+    <radialGradient id="nodeGradient" cx="40%" cy="40%">
+      <stop offset="0%" style="stop-color:#FFB74D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </radialGradient>
+
+    <!-- Subtle glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Shadow filter for depth -->
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.3" flood-color="#2D1B0A"/>
+    </filter>
   </defs>
 
-  <!-- Hexagon shape (Elixir style) -->
-  <path d="M 100,5 L 190,62.5 L 190,177.5 L 100,235 L 10,177.5 L 10,62.5 Z"
-        fill="url(#grad_crucible_trace)"
-        stroke="#FFFFFF"
-        stroke-width="3"/>
+  <!-- Dark background -->
+  <rect width="200" height="200" fill="#1A1410"/>
 
-  <!-- Inner hexagon for depth -->
-  <path d="M 100,25 L 170,67.5 L 170,172.5 L 100,215 L 30,172.5 L 30,67.5 Z"
+  <!-- Outer hexagon frame -->
+  <path d="M 100,15 L 165,45 L 165,155 L 100,185 L 35,155 L 35,45 Z"
         fill="none"
-        stroke="#FFFFFF"
+        stroke="url(#hexGradient)"
+        stroke-width="2.5"
+        opacity="0.9"/>
+
+  <!-- Inner hexagon accent -->
+  <path d="M 100,25 L 155,52.5 L 155,147.5 L 100,175 L 45,147.5 L 45,52.5 Z"
+        fill="none"
+        stroke="#CC7A2C"
         stroke-width="1"
-        opacity="0.3"/>
+        opacity="0.4"/>
 
-  <!-- Letter/Icon in center -->
-  <text x="100" y="135"
-        font-family="Arial, sans-serif"
-        font-size="80"
-        font-weight="bold"
-        fill="#FFFFFF"
-        text-anchor="middle">
-    T
-  </text>
+  <!-- Connection lines (causal relationships) -->
+  <!-- Root to left branch -->
+  <line x1="100" y1="70" x2="70" y2="95"
+        stroke="url(#causalFlow)" stroke-width="1.5" opacity="0.7"/>
 
-  <!-- Small text at bottom -->
-  <text x="100" y="210"
-        font-family="Arial, sans-serif"
-        font-size="14"
-        font-weight="normal"
-        fill="#FFFFFF"
-        text-anchor="middle"
-        opacity="0.9">
-    Trace
-  </text>
+  <!-- Root to right branch -->
+  <line x1="100" y1="70" x2="130" y2="95"
+        stroke="url(#causalFlow)" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Left branch down -->
+  <line x1="70" y1="95" x2="55" y2="125"
+        stroke="#D97706" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- Left branch to right -->
+  <line x1="70" y1="95" x2="90" y2="115"
+        stroke="#D97706" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- Right branch down -->
+  <line x1="130" y1="95" x2="145" y2="125"
+        stroke="#D97706" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- Right branch to center -->
+  <line x1="130" y1="95" x2="110" y2="115"
+        stroke="#D97706" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- Secondary connections -->
+  <line x1="55" y1="125" x2="75" y2="145"
+        stroke="#B8620F" stroke-width="1" opacity="0.5"/>
+
+  <line x1="145" y1="125" x2="125" y2="145"
+        stroke="#B8620F" stroke-width="1" opacity="0.5"/>
+
+  <!-- Root node (central source) -->
+  <circle cx="100" cy="70" r="5.5"
+          fill="url(#nodeGradient)"
+          stroke="#FF9A3D"
+          stroke-width="1.5"
+          filter="url(#glow) url(#shadow)"/>
+
+  <!-- Inner highlight for root -->
+  <circle cx="100" cy="70" r="3"
+          fill="#FFD699"
+          opacity="0.6"/>
+
+  <!-- Left upper node -->
+  <circle cx="70" cy="95" r="4.5"
+          fill="url(#nodeGradient)"
+          stroke="#D97706"
+          stroke-width="1.2"
+          filter="url(#shadow)"/>
+
+  <!-- Right upper node -->
+  <circle cx="130" cy="95" r="4.5"
+          fill="url(#nodeGradient)"
+          stroke="#D97706"
+          stroke-width="1.2"
+          filter="url(#shadow)"/>
+
+  <!-- Lower left node -->
+  <circle cx="55" cy="125" r="3.5"
+          fill="#D97706"
+          stroke="#B8620F"
+          stroke-width="1"
+          opacity="0.85"/>
+
+  <!-- Lower center-left node -->
+  <circle cx="75" cy="145" r="3.5"
+          fill="#D97706"
+          stroke="#B8620F"
+          stroke-width="1"
+          opacity="0.85"/>
+
+  <!-- Lower center-right node -->
+  <circle cx="125" cy="145" r="3.5"
+          fill="#D97706"
+          stroke="#B8620F"
+          stroke-width="1"
+          opacity="0.85"/>
+
+  <!-- Lower right node -->
+  <circle cx="145" cy="125" r="3.5"
+          fill="#D97706"
+          stroke="#B8620F"
+          stroke-width="1"
+          opacity="0.85"/>
+
+  <!-- Center middle node (convergence point) -->
+  <circle cx="90" cy="115" r="3"
+          fill="#FF9A3D"
+          stroke="#FFB74D"
+          stroke-width="0.8"
+          opacity="0.9"/>
+
+  <circle cx="110" cy="115" r="3"
+          fill="#FF9A3D"
+          stroke="#FFB74D"
+          stroke-width="0.8"
+          opacity="0.9"/>
+
+  <!-- Arrow indicators for causal direction -->
+  <!-- Arrow on left branch -->
+  <polygon points="78,102 76,98 80,100"
+           fill="#FF9A3D" opacity="0.7"/>
+
+  <!-- Arrow on right branch -->
+  <polygon points="122,102 124,98 120,100"
+           fill="#FF9A3D" opacity="0.7"/>
 </svg>

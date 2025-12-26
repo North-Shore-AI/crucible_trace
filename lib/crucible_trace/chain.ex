@@ -251,4 +251,193 @@ defmodule CrucibleTrace.Chain do
     sum = Enum.sum(list)
     sum / length(list)
   end
+
+  # Relationship Functions
+
+  @doc """
+  Gets child events of a given event.
+
+  Returns `{:ok, children}` with the list of child events,
+  or `{:error, reason}` if the parent event is not found.
+  """
+  @spec get_children(t(), String.t()) :: {:ok, [Event.t()]} | {:error, String.t()}
+  def get_children(%__MODULE__{} = chain, event_id) do
+    case get_event(chain, event_id) do
+      {:ok, _event} ->
+        children = Enum.filter(chain.events, &(&1.parent_id == event_id))
+        {:ok, children}
+
+      :error ->
+        {:error, "Event not found: #{event_id}"}
+    end
+  end
+
+  @doc """
+  Gets the parent event of a given event.
+
+  Returns `{:ok, parent}` where parent is the parent event or nil if no parent,
+  or `{:error, reason}` if the event is not found.
+  """
+  @spec get_parent(t(), String.t()) :: {:ok, Event.t() | nil} | {:error, String.t()}
+  def get_parent(%__MODULE__{} = chain, event_id) do
+    case get_event(chain, event_id) do
+      {:ok, event} -> find_parent_event(chain, event.parent_id)
+      :error -> {:error, "Event not found: #{event_id}"}
+    end
+  end
+
+  defp find_parent_event(_chain, nil), do: {:ok, nil}
+
+  defp find_parent_event(chain, parent_id) do
+    case get_event(chain, parent_id) do
+      {:ok, parent} -> {:ok, parent}
+      :error -> {:ok, nil}
+    end
+  end
+
+  @doc """
+  Gets root events (events with no parent).
+  """
+  @spec get_root_events(t()) :: [Event.t()]
+  def get_root_events(%__MODULE__{} = chain) do
+    Enum.filter(chain.events, &is_nil(&1.parent_id))
+  end
+
+  @doc """
+  Gets leaf events (events with no children).
+  """
+  @spec get_leaf_events(t()) :: [Event.t()]
+  def get_leaf_events(%__MODULE__{} = chain) do
+    parent_ids =
+      chain.events |> Enum.map(& &1.parent_id) |> Enum.reject(&is_nil/1) |> MapSet.new()
+
+    Enum.reject(chain.events, &MapSet.member?(parent_ids, &1.id))
+  end
+
+  @doc """
+  Validates that no circular dependencies exist in the chain.
+
+  Returns `{:ok, chain}` if valid, `{:error, reason}` otherwise.
+  """
+  @spec validate_relationships(t()) :: {:ok, t()} | {:error, String.t()}
+  def validate_relationships(%__MODULE__{events: []} = chain), do: {:ok, chain}
+
+  def validate_relationships(%__MODULE__{} = chain) do
+    event_ids = chain.events |> Enum.map(& &1.id) |> MapSet.new()
+
+    # Check for missing references
+    with :ok <- validate_parent_references(chain, event_ids),
+         :ok <- validate_depends_on_references(chain, event_ids),
+         :ok <- validate_no_cycles(chain) do
+      {:ok, chain}
+    end
+  end
+
+  defp validate_parent_references(chain, event_ids) do
+    invalid =
+      Enum.find(chain.events, fn event ->
+        event.parent_id != nil and not MapSet.member?(event_ids, event.parent_id)
+      end)
+
+    if invalid do
+      {:error, "Parent event not found: #{invalid.parent_id}"}
+    else
+      :ok
+    end
+  end
+
+  defp validate_depends_on_references(chain, event_ids) do
+    invalid =
+      Enum.find(chain.events, fn event ->
+        Enum.any?(event.depends_on, fn dep_id ->
+          not MapSet.member?(event_ids, dep_id)
+        end)
+      end)
+
+    if invalid do
+      {:error, "Dependency event not found in depends_on list"}
+    else
+      :ok
+    end
+  end
+
+  defp validate_no_cycles(%__MODULE__{} = chain) do
+    # Build adjacency list from parent_id and depends_on
+    adjacency =
+      Enum.reduce(chain.events, %{}, fn event, acc ->
+        deps =
+          if event.parent_id do
+            [event.parent_id | event.depends_on]
+          else
+            event.depends_on
+          end
+
+        Map.put(acc, event.id, deps)
+      end)
+
+    # Check for cycles using DFS
+    event_ids = Map.keys(adjacency)
+
+    result =
+      Enum.reduce_while(event_ids, %{}, fn id, visited ->
+        case detect_cycle(id, adjacency, visited, %{}) do
+          {:cycle, _} -> {:halt, {:error, "Circular dependency detected"}}
+          {:ok, new_visited} -> {:cont, new_visited}
+        end
+      end)
+
+    case result do
+      {:error, _} = error -> error
+      _ -> :ok
+    end
+  end
+
+  @spec detect_cycle(any(), map(), map(), map()) ::
+          {:cycle, any()} | {:ok, map()}
+  defp detect_cycle(node, adjacency, visited, current_path) do
+    cond do
+      Map.has_key?(current_path, node) ->
+        {:cycle, node}
+
+      Map.get(visited, node) == :done ->
+        {:ok, visited}
+
+      true ->
+        traverse_dependencies(node, adjacency, visited, current_path)
+    end
+  end
+
+  defp traverse_dependencies(node, adjacency, visited, current_path) do
+    new_path = Map.put(current_path, node, true)
+    deps = Map.get(adjacency, node, [])
+
+    result =
+      Enum.reduce_while(deps, visited, fn dep, acc ->
+        case detect_cycle(dep, adjacency, acc, new_path) do
+          {:cycle, _} = cycle -> {:halt, cycle}
+          {:ok, new_visited} -> {:cont, new_visited}
+        end
+      end)
+
+    case result do
+      {:cycle, _} = cycle -> cycle
+      visited_after -> {:ok, Map.put(visited_after, node, :done)}
+    end
+  end
+
+  @doc """
+  Gets all events for a given stage_id.
+  """
+  @spec get_events_by_stage(t(), String.t()) :: [Event.t()]
+  def get_events_by_stage(%__MODULE__{} = chain, stage_id) do
+    Enum.filter(chain.events, &(&1.stage_id == stage_id))
+  end
+
+  @doc """
+  Gets all events for a given experiment_id.
+  """
+  @spec get_events_by_experiment(t(), String.t()) :: [Event.t()]
+  def get_events_by_experiment(%__MODULE__{} = chain, experiment_id) do
+    Enum.filter(chain.events, &(&1.experiment_id == experiment_id))
+  end
 end

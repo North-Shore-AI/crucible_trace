@@ -494,14 +494,128 @@ CrucibleTrace.save(chain,
 - HTML visualization uses inline CSS (no external assets)
 - No real-time collaboration features
 
+## ML Training Integration (v0.3.0)
+
+CrucibleTrace now provides first-class support for ML training workflows:
+
+### Training Events
+
+```elixir
+# Start training
+event = CrucibleTrace.training_started(
+  "Begin ResNet training",
+  "Transfer learning from ImageNet",
+  model_name: "resnet50",
+  experiment_id: "exp-001"
+)
+
+# Record epoch completion
+event = CrucibleTrace.epoch_completed(5, %{
+  train_loss: 0.234,
+  val_loss: 0.289,
+  accuracy: 0.876
+})
+
+# Record checkpoint
+event = CrucibleTrace.checkpoint_saved(
+  "/models/checkpoint_epoch_5.pt",
+  metrics: %{val_accuracy: 0.876}
+)
+
+# Wrap training function with automatic events
+{chain, result} = CrucibleTrace.trace_training(chain, fn ->
+  train_model(data)
+end)
+```
+
+### Event Relationships
+
+Events can now reference parent events and dependencies:
+
+```elixir
+parent = CrucibleTrace.create_event(:training_started, "Start", "Reason")
+child = CrucibleTrace.create_event(:epoch_completed, "Epoch 1", "Done",
+  parent_id: parent.id,
+  experiment_id: "exp-001"
+)
+
+# Query relationships
+{:ok, children} = CrucibleTrace.get_children(chain, parent.id)
+roots = CrucibleTrace.get_root_events(chain)
+leaves = CrucibleTrace.get_leaf_events(chain)
+
+# Validate no circular dependencies
+{:ok, _} = CrucibleTrace.validate_relationships(chain)
+```
+
+### Telemetry Integration
+
+Automatically trace pipeline events:
+
+```elixir
+# Attach handlers to capture crucible_framework events
+CrucibleTrace.attach_telemetry()
+
+# Events are automatically created for pipeline stage execution
+
+# Detach when done
+CrucibleTrace.detach_telemetry()
+```
+
+### Advanced Querying
+
+```elixir
+# Content search
+events = CrucibleTrace.search_events(chain, "GenServer",
+  type: [:hypothesis_formed, :pattern_applied],
+  min_confidence: 0.8
+)
+
+# Regex search
+events = CrucibleTrace.search_regex(chain, ~r/epoch \d+/i)
+
+# Advanced boolean queries
+events = CrucibleTrace.query_events(chain, %{
+  or: [
+    %{type: :training_started},
+    %{confidence: {:gte, 0.9}}
+  ],
+  and: [
+    %{stage_id: "training"}
+  ]
+})
+
+# Aggregate by field
+counts = CrucibleTrace.aggregate_by(chain, :type, &length/1)
+```
+
+### Stage Tracing
+
+Wrap pipeline stages with automatic tracing:
+
+```elixir
+{chain, result} = CrucibleTrace.trace_stage(chain, "preprocessing", fn ->
+  preprocess_data(data)
+end, experiment_id: "exp-001")
+```
+
 ## Roadmap
 
+### Completed
+- [x] Diff visualization between chains (v0.2.0)
+- [x] Export to Mermaid diagrams (v0.2.0)
+- [x] ML training event types (v0.3.0)
+- [x] Event relationships (v0.3.0)
+- [x] Telemetry integration (v0.3.0)
+- [x] Advanced querying (v0.3.0)
+- [x] Stage tracing (v0.3.0)
+
+### Planned
 - [ ] More robust XML/JSON parsing
 - [ ] Database storage backend option
 - [ ] Real-time chain updates via Phoenix LiveView
-- [ ] Diff visualization between chains
-- [ ] Export to Mermaid diagrams
-- [ ] Integration with popular LLM libraries
+- [ ] Cryptographic verification
+- [ ] Distributed training support
 
 ## Contributing
 
