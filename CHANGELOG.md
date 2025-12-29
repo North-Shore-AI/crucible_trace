@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2025-12-28
+
+### Changed
+- Bump `crucible_ir` dependency from ~> 0.2.0 to ~> 0.2.1
+- Bump `telemetry` dependency from ~> 1.2 to ~> 1.3
+- Credo cleanup: use `Enum.map_join`, `Enum.empty?`, extract helper functions, alphabetize aliases
+
 ## [0.2.1] - 2025-11-26
 
 ### Added

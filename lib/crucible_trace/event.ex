@@ -210,22 +210,26 @@ defmodule CrucibleTrace.Event do
   """
   def from_map(map) when is_map(map) do
     %__MODULE__{
-      id: Map.get(map, "id") || Map.get(map, :id) || generate_id(),
-      timestamp: parse_timestamp(Map.get(map, "timestamp") || Map.get(map, :timestamp)),
-      type: parse_type(Map.get(map, "type") || Map.get(map, :type)),
-      decision: Map.get(map, "decision") || Map.get(map, :decision),
-      alternatives: Map.get(map, "alternatives") || Map.get(map, :alternatives, []),
-      reasoning: Map.get(map, "reasoning") || Map.get(map, :reasoning),
-      confidence: parse_confidence(Map.get(map, "confidence") || Map.get(map, :confidence, 1.0)),
-      code_section: Map.get(map, "code_section") || Map.get(map, :code_section),
-      spec_reference: Map.get(map, "spec_reference") || Map.get(map, :spec_reference),
-      metadata: Map.get(map, "metadata") || Map.get(map, :metadata, %{}),
+      id: get_field(map, "id", :id) || generate_id(),
+      timestamp: parse_timestamp(get_field(map, "timestamp", :timestamp)),
+      type: parse_type(get_field(map, "type", :type)),
+      decision: get_field(map, "decision", :decision),
+      alternatives: get_field(map, "alternatives", :alternatives, []),
+      reasoning: get_field(map, "reasoning", :reasoning),
+      confidence: parse_confidence(get_field(map, "confidence", :confidence, 1.0)),
+      code_section: get_field(map, "code_section", :code_section),
+      spec_reference: get_field(map, "spec_reference", :spec_reference),
+      metadata: get_field(map, "metadata", :metadata, %{}),
       # Relationship fields
-      parent_id: Map.get(map, "parent_id") || Map.get(map, :parent_id),
-      depends_on: Map.get(map, "depends_on") || Map.get(map, :depends_on, []),
-      stage_id: Map.get(map, "stage_id") || Map.get(map, :stage_id),
-      experiment_id: Map.get(map, "experiment_id") || Map.get(map, :experiment_id)
+      parent_id: get_field(map, "parent_id", :parent_id),
+      depends_on: get_field(map, "depends_on", :depends_on, []),
+      stage_id: get_field(map, "stage_id", :stage_id),
+      experiment_id: get_field(map, "experiment_id", :experiment_id)
     }
+  end
+
+  defp get_field(map, key_str, key_atom, default \\ nil) do
+    Map.get(map, key_str) || Map.get(map, key_atom, default)
   end
 
   defp generate_id do

@@ -1,6 +1,6 @@
 defmodule CrucibleTrace.DiffTest do
   use ExUnit.Case, async: true
-  alias CrucibleTrace.{Chain, Event, Diff}
+  alias CrucibleTrace.{Chain, Diff, Event}
 
   describe "compare/3" do
     test "compares two identical chains" do

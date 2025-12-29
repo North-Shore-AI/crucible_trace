@@ -33,7 +33,7 @@ defmodule CrucibleTrace.Mermaid do
     color_by_type = Keyword.get(opts, :color_by_type, true)
     max_length = Keyword.get(opts, :max_label_length, @default_max_label_length)
 
-    if length(chain.events) == 0 do
+    if Enum.empty?(chain.events) do
       """
       flowchart TD
           Start[No events in chain]
@@ -42,21 +42,19 @@ defmodule CrucibleTrace.Mermaid do
       nodes =
         chain.events
         |> Enum.with_index()
-        |> Enum.map(fn {event, idx} ->
+        |> Enum.map_join("\n", fn {event, idx} ->
           label = format_event_label(event, include_confidence, max_length)
           node_id = "E#{idx}"
           "    #{node_id}[#{escape_label(label)}]:::#{event.type}"
         end)
-        |> Enum.join("\n")
 
       connections =
         chain.events
         |> Enum.with_index()
         |> Enum.chunk_every(2, 1, :discard)
-        |> Enum.map(fn [{_e1, idx1}, {_e2, idx2}] ->
+        |> Enum.map_join("\n", fn [{_e1, idx1}, {_e2, idx2}] ->
           "    E#{idx1} --> E#{idx2}"
         end)
-        |> Enum.join("\n")
 
       styles =
         if color_by_type do
@@ -92,12 +90,12 @@ defmodule CrucibleTrace.Mermaid do
 
     steps =
       chain.events
-      |> Enum.map(fn event ->
+      |> Enum.map_join("\n", fn event ->
         label = truncate_label(event.decision, max_length)
         step = "    participant #{format_event_type_short(event.type)} as #{escape_label(label)}"
 
         note =
-          if show_alternatives and length(event.alternatives) > 0 do
+          if show_alternatives and !Enum.empty?(event.alternatives) do
             alts = Enum.join(event.alternatives, ", ")
 
             "\n    Note over #{format_event_type_short(event.type)}: Alternatives: #{escape_label(alts)}"
@@ -107,7 +105,6 @@ defmodule CrucibleTrace.Mermaid do
 
         step <> note
       end)
-      |> Enum.join("\n")
 
     """
     sequenceDiagram
@@ -127,7 +124,7 @@ defmodule CrucibleTrace.Mermaid do
   def to_timeline(%Chain{} = chain, opts \\ []) do
     title = Keyword.get(opts, :title, chain.name)
 
-    if length(chain.events) == 0 do
+    if Enum.empty?(chain.events) do
       """
       timeline
           title #{escape_label(title)}
@@ -137,11 +134,10 @@ defmodule CrucibleTrace.Mermaid do
     else
       events_text =
         chain.events
-        |> Enum.map(fn event ->
+        |> Enum.map_join(" : \n", fn event ->
           label = truncate_label(event.decision, 40)
           "        #{escape_label(label)}"
         end)
-        |> Enum.join(" : \n")
 
       """
       timeline
@@ -162,7 +158,7 @@ defmodule CrucibleTrace.Mermaid do
     max_length = Keyword.get(opts, :max_label_length, @default_max_label_length)
     color_by_type = Keyword.get(opts, :color_by_type, true)
 
-    if length(chain.events) == 0 do
+    if Enum.empty?(chain.events) do
       """
       graph TD
           Start[No events in chain]
@@ -171,23 +167,21 @@ defmodule CrucibleTrace.Mermaid do
       # Build node definitions
       nodes =
         chain.events
-        |> Enum.map(fn event ->
+        |> Enum.map_join("\n", fn event ->
           label = truncate_label(event.decision, max_length)
           node_id = String.slice(event.id, 0..7)
           "    #{node_id}[#{escape_label(label)}]:::#{event.type}"
         end)
-        |> Enum.join("\n")
 
       # Build connections (default to sequence if no relationships)
       connections =
         chain.events
         |> Enum.chunk_every(2, 1, :discard)
-        |> Enum.map(fn [e1, e2] ->
+        |> Enum.map_join("\n", fn [e1, e2] ->
           id1 = String.slice(e1.id, 0..7)
           id2 = String.slice(e2.id, 0..7)
           "    #{id1} --> #{id2}"
         end)
-        |> Enum.join("\n")
 
       styles =
         if color_by_type do

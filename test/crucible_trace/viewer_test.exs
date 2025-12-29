@@ -1,6 +1,6 @@
 defmodule CrucibleTrace.ViewerTest do
   use ExUnit.Case, async: true
-  alias CrucibleTrace.{Viewer, Chain, Event}
+  alias CrucibleTrace.{Chain, Event, Viewer}
 
   setup do
     chain = Chain.new("Test Visualization Chain", description: "A test chain for visualization")

@@ -1,6 +1,6 @@
 defmodule CrucibleTrace.ParserTest do
   use ExUnit.Case, async: true
-  alias CrucibleTrace.{Parser, Chain}
+  alias CrucibleTrace.{Chain, Parser}
 
   describe "parse/1" do
     test "parses single event from text" do

@@ -69,22 +69,7 @@ defmodule CrucibleTrace.Diff do
         event2 = Map.get(events2, key)
         {key, compare_events(event1, event2, ignore_timestamps)}
       end)
-      |> Enum.reduce({[], %{}}, fn {key, changes}, {mods, deltas} ->
-        if map_size(changes) == 0 do
-          {mods, deltas}
-        else
-          updated_deltas =
-            case changes[:confidence] do
-              {:changed, old_conf, new_conf} ->
-                Map.put(deltas, key, Float.round(new_conf - old_conf, 6))
-
-              _ ->
-                deltas
-            end
-
-          {[{key, changes} | mods], updated_deltas}
-        end
-      end)
+      |> calculate_changes_and_deltas()
 
     modified_events = Enum.reverse(modified_events)
 
@@ -290,45 +275,41 @@ defmodule CrucibleTrace.Diff do
 
   defp format_events_text(events, prefix) do
     events
-    |> Enum.map(fn event ->
+    |> Enum.map_join("\n", fn event ->
       """
       #{prefix} [#{event.type}] #{event.decision}
          Reasoning: #{event.reasoning}
          Confidence: #{event.confidence}
       """
     end)
-    |> Enum.join("\n")
   end
 
   defp format_modified_events_text([]), do: "(none)"
 
   defp format_modified_events_text(modified) do
     modified
-    |> Enum.map(fn {event_id, changes} ->
+    |> Enum.map_join("\n", fn {event_id, changes} ->
       change_strs =
         changes
-        |> Enum.map(fn {field, {:changed, old, new}} ->
+        |> Enum.map_join("\n", fn {field, {:changed, old, new}} ->
           "  - #{field}: #{inspect(old)} -> #{inspect(new)}"
         end)
-        |> Enum.join("\n")
 
       """
       Event #{event_id}:
       #{change_strs}
       """
     end)
-    |> Enum.join("\n")
   end
 
   defp format_confidence_deltas(deltas) when map_size(deltas) == 0, do: "(none)"
 
   defp format_confidence_deltas(deltas) do
     deltas
-    |> Enum.map(fn {event_id, delta} ->
+    |> Enum.map_join("\n", fn {event_id, delta} ->
       sign = if delta >= 0, do: "+", else: ""
       "  #{event_id}: #{sign}#{Float.round(delta, 3)}"
     end)
-    |> Enum.join("\n")
   end
 
   defp generate_diff_css do
@@ -427,7 +408,7 @@ defmodule CrucibleTrace.Diff do
 
   defp generate_events_html(events, class) do
     events
-    |> Enum.map(fn event ->
+    |> Enum.map_join("\n", fn event ->
       """
       <div class="event #{class}">
         <strong>[#{event.type}]</strong> #{html_escape(event.decision)}
@@ -436,20 +417,18 @@ defmodule CrucibleTrace.Diff do
       </div>
       """
     end)
-    |> Enum.join("\n")
   end
 
   defp generate_modified_html([]), do: "<p>None</p>"
 
   defp generate_modified_html(modified) do
     modified
-    |> Enum.map(fn {_id, changes} ->
+    |> Enum.map_join("\n", fn {_id, changes} ->
       change_html =
         changes
-        |> Enum.map(fn {field, {:changed, old, new}} ->
+        |> Enum.map_join("\n", fn {field, {:changed, old, new}} ->
           "<li><strong>#{field}:</strong> #{html_escape(inspect(old))} → #{html_escape(inspect(new))}</li>"
         end)
-        |> Enum.join("\n")
 
       """
       <div class="event modified">
@@ -459,7 +438,6 @@ defmodule CrucibleTrace.Diff do
       </div>
       """
     end)
-    |> Enum.join("\n")
   end
 
   defp html_escape(text) when is_binary(text) do
@@ -471,4 +449,25 @@ defmodule CrucibleTrace.Diff do
   end
 
   defp html_escape(text), do: text
+
+  defp calculate_changes_and_deltas(changes_list) do
+    Enum.reduce(changes_list, {[], %{}}, fn {key, changes}, {mods, deltas} ->
+      if map_size(changes) == 0 do
+        {mods, deltas}
+      else
+        updated_deltas = update_confidence_deltas(deltas, key, changes)
+        {[{key, changes} | mods], updated_deltas}
+      end
+    end)
+  end
+
+  defp update_confidence_deltas(deltas, key, changes) do
+    case changes[:confidence] do
+      {:changed, old_conf, new_conf} ->
+        Map.put(deltas, key, Float.round(new_conf - old_conf, 6))
+
+      _ ->
+        deltas
+    end
+  end
 end

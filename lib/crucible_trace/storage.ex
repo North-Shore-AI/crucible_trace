@@ -43,9 +43,8 @@ defmodule CrucibleTrace.Storage do
 
     file_path = Path.join([storage_dir, "#{chain_id}.#{format}"])
 
-    with {:ok, content} <- File.read(file_path),
-         {:ok, chain} <- decode_chain(content, format) do
-      {:ok, chain}
+    with {:ok, content} <- File.read(file_path) do
+      decode_chain(content, format)
     end
   end
 
@@ -296,7 +295,7 @@ defmodule CrucibleTrace.Storage do
   defp format_events_as_markdown(events) do
     events
     |> Enum.with_index(1)
-    |> Enum.map(fn {event, idx} ->
+    |> Enum.map_join("\n", fn {event, idx} ->
       """
       ### #{idx}. #{format_event_type(event.type)}
 
@@ -313,7 +312,6 @@ defmodule CrucibleTrace.Storage do
       ---
       """
     end)
-    |> Enum.join("\n")
   end
 
   defp format_as_csv(%Chain{} = chain) do
@@ -321,7 +319,7 @@ defmodule CrucibleTrace.Storage do
       "id,timestamp,type,decision,alternatives,reasoning,confidence,code_section,spec_reference\n"
 
     rows =
-      Enum.map(chain.events, fn event ->
+      Enum.map_join(chain.events, "\n", fn event ->
         [
           event.id,
           DateTime.to_iso8601(event.timestamp),
@@ -335,7 +333,6 @@ defmodule CrucibleTrace.Storage do
         ]
         |> Enum.join(",")
       end)
-      |> Enum.join("\n")
 
     header <> rows
   end
@@ -352,7 +349,6 @@ defmodule CrucibleTrace.Storage do
     type
     |> Atom.to_string()
     |> String.split("_")
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &String.capitalize/1)
   end
 end

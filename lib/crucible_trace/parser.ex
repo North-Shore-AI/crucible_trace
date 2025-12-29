@@ -6,7 +6,7 @@ defmodule CrucibleTrace.Parser do
   LLM-generated text containing decision traces.
   """
 
-  alias CrucibleTrace.{Event, Chain}
+  alias CrucibleTrace.{Chain, Event}
 
   @doc """
   Parses events from LLM output text.
@@ -26,12 +26,10 @@ defmodule CrucibleTrace.Parser do
   Returns `{:ok, events}` if successful, `{:error, reason}` otherwise.
   """
   def parse(text) when is_binary(text) do
-    try do
-      events = extract_events(text)
-      {:ok, events}
-    rescue
-      e -> {:error, Exception.message(e)}
-    end
+    events = extract_events(text)
+    {:ok, events}
+  rescue
+    e -> {:error, Exception.message(e)}
   end
 
   @doc """

@@ -434,13 +434,12 @@ defmodule CrucibleTrace.Viewer do
 
     type_counts_html =
       (stats[:event_type_counts] || %{})
-      |> Enum.map(fn {type, count} ->
+      |> Enum.map_join("\n", fn {type, count} ->
         "<div class=\"stat-item\">
           <div class=\"stat-label\">#{format_event_type(type)}</div>
           <div class=\"stat-value\">#{count}</div>
         </div>"
       end)
-      |> Enum.join("\n")
 
     avg_confidence = stats[:avg_confidence] || 0.0
     duration = stats[:duration_seconds] || 0
@@ -467,45 +466,41 @@ defmodule CrucibleTrace.Viewer do
     """
   end
 
+  defp generate_timeline(%Chain{events: []}), do: ""
+
   defp generate_timeline(chain) do
-    if length(chain.events) == 0 do
-      ""
-    else
-      first_time = List.first(chain.events).timestamp
-      last_time = List.last(chain.events).timestamp
-      total_duration = DateTime.diff(last_time, first_time, :millisecond)
+    first_time = List.first(chain.events).timestamp
+    last_time = List.last(chain.events).timestamp
+    total_duration = DateTime.diff(last_time, first_time, :millisecond)
 
-      markers =
-        chain.events
-        |> Enum.map(fn event ->
-          offset = DateTime.diff(event.timestamp, first_time, :millisecond)
-          position = if total_duration > 0, do: offset / total_duration * 100, else: 0
+    markers =
+      chain.events
+      |> Enum.map_join("\n", fn event ->
+        offset = DateTime.diff(event.timestamp, first_time, :millisecond)
+        position = if total_duration > 0, do: offset / total_duration * 100, else: 0
 
-          """
-          <div class="timeline-marker" style="left: #{position}%"
-               title="#{format_event_type(event.type)}: #{html_escape(event.decision)}"></div>
-          """
-        end)
-        |> Enum.join("\n")
+        """
+        <div class="timeline-marker" style="left: #{position}%"
+             title="#{format_event_type(event.type)}: #{html_escape(event.decision)}"></div>
+        """
+      end)
 
-      """
-      <section class="timeline">
-        <h2>Timeline</h2>
-        <div class="timeline-bar">
-          #{markers}
-        </div>
-      </section>
-      """
-    end
+    """
+    <section class="timeline">
+      <h2>Timeline</h2>
+      <div class="timeline-bar">
+        #{markers}
+      </div>
+    </section>
+    """
   end
 
   defp generate_events_html(events) do
     events
     |> Enum.with_index(1)
-    |> Enum.map(fn {event, idx} ->
+    |> Enum.map_join("\n", fn {event, idx} ->
       generate_event_html(event, idx)
     end)
-    |> Enum.join("\n")
   end
 
   defp generate_event_html(%Event{} = event, idx) do
@@ -534,10 +529,10 @@ defmodule CrucibleTrace.Viewer do
     meta_parts = ["<span>#{DateTime.to_string(event.timestamp)}</span>" | meta_parts]
 
     meta_html =
-      if length(meta_parts) > 0 do
-        "<div class=\"event-meta\">#{Enum.join(Enum.reverse(meta_parts), "")}</div>"
-      else
+      if Enum.empty?(meta_parts) do
         ""
+      else
+        "<div class=\"event-meta\">#{Enum.join(Enum.reverse(meta_parts), "")}</div>"
       end
 
     """
@@ -559,10 +554,9 @@ defmodule CrucibleTrace.Viewer do
   defp generate_alternatives_html(alternatives) do
     items =
       alternatives
-      |> Enum.map(fn alt ->
+      |> Enum.map_join("\n", fn alt ->
         "<div class=\"alternative-item\">#{html_escape(alt)}</div>"
       end)
-      |> Enum.join("\n")
 
     """
     <div class="alternatives">
@@ -580,8 +574,7 @@ defmodule CrucibleTrace.Viewer do
     type
     |> Atom.to_string()
     |> String.split("_")
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &String.capitalize/1)
   end
 
   defp html_escape(text) when is_binary(text) do

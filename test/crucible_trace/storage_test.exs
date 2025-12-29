@@ -1,6 +1,6 @@
 defmodule CrucibleTrace.StorageTest do
   use ExUnit.Case
-  alias CrucibleTrace.{Storage, Chain, Event}
+  alias CrucibleTrace.{Chain, Event, Storage}
 
   @test_storage_dir "test_causal_traces"
 
