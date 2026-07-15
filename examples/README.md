@@ -12,5 +12,6 @@ Individual scripts:
 - `examples/advanced_analysis.exs` — deeper statistics, issue identification, and exports.
 - `examples/llm_integration.exs` — prompt building, parsing realistic LLM output, and validation.
 - `examples/storage_and_search.exs` — saving, listing, loading, searching, and exporting chains.
+- `examples/lineage_integration.exs` — convert chains into LineageIR artifacts and refs.
 - `examples/chain_comparison.exs` — diff two chains, track confidence deltas, and generate HTML diff reports.
 - `examples/mermaid_export.exs` — export flowchart/sequence/timeline/graph Mermaid diagrams and embed in docs.

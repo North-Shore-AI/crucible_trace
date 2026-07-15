@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- LineageIR conversion helpers to attach CrucibleTrace chains as artifacts and artifact refs
+- LineageIR integration example script and documentation updates
+
 ## [0.3.1] - 2025-12-28
 
 ### Changed

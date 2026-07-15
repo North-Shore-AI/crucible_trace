@@ -133,7 +133,9 @@ defmodule CrucibleTrace.ChainTest do
       chain = Chain.new("Test Chain")
 
       events = [
-        Event.new(:hypothesis_formed, "Decision 1", "Reasoning 1", alternatives: ["Alt1", "Alt2"]),
+        Event.new(:hypothesis_formed, "Decision 1", "Reasoning 1",
+          alternatives: ["Alt1", "Alt2"]
+        ),
         Event.new(:pattern_applied, "Decision 2", "Reasoning 2"),
         Event.new(:alternative_rejected, "Decision 3", "Reasoning 3", alternatives: ["Alt3"])
       ]

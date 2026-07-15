@@ -22,6 +22,7 @@ CausalTrace enables transparency and debugging in LLM-based code generation by c
 - **Interactive Visualization**: Generate beautiful HTML views with filtering and statistics
 - **Analysis Tools**: Query events, calculate statistics, find decision points
 - **Multiple Export Formats**: JSON, Markdown, CSV, and Mermaid diagrams
+- **LineageIR Integration**: Convert chains into LineageIR artifacts for cross-system lineage
 - **Chain Comparison**: Diff two chains to identify changes, track confidence evolution (v0.2.0)
 - **Mermaid Diagrams**: Export to flowchart, sequence, timeline, or graph formats for documentation (v0.2.0)
 
@@ -150,6 +151,28 @@ html = CrucibleTrace.visualize(chain, style: :light)
 {:ok, markdown} = CrucibleTrace.export(chain, :markdown)
 {:ok, csv} = CrucibleTrace.export(chain, :csv)
 ```
+
+### LineageIR Integration
+
+```elixir
+# Build a LineageIR artifact (returns a struct when LineageIR is available)
+{:ok, artifact} = CrucibleTrace.lineage_artifact(chain,
+  trace_id: trace_id,
+  include_chain: true
+)
+
+# Persist the chain to disk and use the file path as the artifact uri
+{:ok, saved} = CrucibleTrace.lineage_artifact(chain,
+  save: true,
+  storage_dir: "causal_traces"
+)
+
+# Build a lightweight artifact reference
+{:ok, ref} = CrucibleTrace.lineage_artifact_ref(chain, uri: saved.uri)
+```
+
+If LineageIR is not in your dependency tree, these helpers return plain maps
+with the same fields so integrations remain optional.
 
 ### Analysis
 
@@ -339,6 +362,11 @@ The library includes comprehensive example files demonstrating various use cases
 - Chain deletion and archiving
 - Batch operations and storage statistics
 
+### Lineage Integration (`examples/lineage_integration.exs`)
+- Convert chains into LineageIR artifacts
+- Persist chains and attach artifact uris
+- Build lightweight artifact references
+
 ### Chain Comparison (`examples/chain_comparison.exs`)
 - Compare reasoning chains from different runs
 - Track added/removed/modified events
@@ -358,6 +386,7 @@ mix run examples/basic_usage.exs
 mix run examples/advanced_analysis.exs
 mix run examples/llm_integration.exs
 mix run examples/storage_and_search.exs
+mix run examples/lineage_integration.exs
 mix run examples/chain_comparison.exs
 mix run examples/mermaid_export.exs
 ```
@@ -378,10 +407,11 @@ The library has comprehensive test coverage across all modules:
 - **Chain tests**: 18 tests covering chain operations, statistics, and filtering
 - **Parser tests**: 21 tests covering LLM output parsing and validation
 - **Storage tests**: 21 tests covering persistence, search, and export
+- **Lineage tests**: 5 tests covering LineageIR artifact conversion
 - **Viewer tests**: 30 tests covering HTML generation and visualization
 - **Integration tests**: 2 tests covering end-to-end functionality
 
-Total: 103+ tests with 100% pass rate
+Total: 108+ tests with 100% pass rate
 
 Run the test suite:
 

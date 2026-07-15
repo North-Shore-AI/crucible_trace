@@ -17,6 +17,7 @@ scripts=(
   "examples/advanced_analysis.exs"
   "examples/llm_integration.exs"
   "examples/storage_and_search.exs"
+  "examples/lineage_integration.exs"
   "examples/chain_comparison.exs"
   "examples/mermaid_export.exs"
 )

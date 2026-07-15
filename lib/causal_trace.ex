@@ -43,6 +43,7 @@ defmodule CrucibleTrace do
     Chain,
     Diff,
     Event,
+    Lineage,
     Mermaid,
     Parser,
     Query,
@@ -355,6 +356,18 @@ defmodule CrucibleTrace do
   Creates an event from a map (e.g., from JSON parsing).
   """
   defdelegate event_from_map(map), to: Event, as: :from_map
+
+  # Lineage Integration
+
+  @doc """
+  Builds a LineageIR artifact (or map) representing a chain.
+  """
+  defdelegate lineage_artifact(chain, opts \\ []), to: Lineage, as: :chain_to_artifact
+
+  @doc """
+  Builds a LineageIR artifact reference (or map) for a chain.
+  """
+  defdelegate lineage_artifact_ref(chain, opts \\ []), to: Lineage, as: :chain_to_artifact_ref
 
   # Diff Operations
 

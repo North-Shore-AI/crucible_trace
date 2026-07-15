@@ -17,6 +17,7 @@ CrucibleTrace (Main API - lib/causal_trace.ex)
     +-- CrucibleTrace.Chain      (lib/crucible_trace/chain.ex)
     +-- CrucibleTrace.Parser     (lib/crucible_trace/parser.ex)
     +-- CrucibleTrace.Storage    (lib/crucible_trace/storage.ex)
+    +-- CrucibleTrace.Lineage    (lib/crucible_trace/lineage.ex)
     +-- CrucibleTrace.Viewer     (lib/crucible_trace/viewer.ex)
     +-- CrucibleTrace.Mermaid    (lib/crucible_trace/mermaid.ex)
     +-- CrucibleTrace.Diff       (lib/crucible_trace/diff.ex)
@@ -290,7 +291,22 @@ CrucibleTrace (Main API - lib/causal_trace.ex)
 
 ---
 
-### 9. CrucibleTrace.Application
+### 9. CrucibleTrace.Lineage
+
+**File:** `/home/home/p/g/North-Shore-AI/crucible_trace/lib/crucible_trace/lineage.ex`
+**Purpose:** Convert CrucibleTrace chains into LineageIR artifacts and refs
+
+**Key Functions:**
+| Function | Description |
+|----------|-------------|
+| `chain_to_artifact/2` | Builds LineageIR artifact (or map) for a chain |
+| `chain_to_artifact_ref/2` | Builds LineageIR artifact ref for a chain |
+| `artifact_to_ref/2` | Builds LineageIR artifact ref from an artifact |
+| `lineage_ir_available?/0` | Indicates if LineageIR structs are available |
+
+---
+
+### 10. CrucibleTrace.Application
 
 **File:** `/home/home/p/g/North-Shore-AI/crucible_trace/lib/crucible_trace/application.ex`
 **Lines:** 21 lines
@@ -347,6 +363,7 @@ lib/
     chain.ex                   # Chain struct & operations (255 lines)
     diff.ex                    # Chain comparison (475 lines)
     event.ex                   # Event struct & operations (181 lines)
+    lineage.ex                 # LineageIR conversion helpers
     mermaid.ex                 # Mermaid diagram export (278 lines)
     parser.ex                  # LLM output parsing (281 lines)
     storage.ex                 # Persistence layer (359 lines)
