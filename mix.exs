@@ -28,10 +28,10 @@ defmodule CrucibleTrace.MixProject do
 
   defp deps do
     [
-      {:crucible_ir, "~> 0.2.1"},
+      {:crucible_ir, "~> 0.3.0"},
       {:jason, "~> 1.4"},
-      {:telemetry, "~> 1.3"},
-      {:ex_doc, "~> 0.40.0", only: :dev, runtime: false},
+      {:telemetry, "~> 1.4"},
+      {:ex_doc, "~> 0.40.3", only: :dev, runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
